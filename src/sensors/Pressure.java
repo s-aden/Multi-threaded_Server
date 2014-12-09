@@ -48,7 +48,7 @@ public class Pressure {
 			// Send it to the server
 			String reading;
 			if ((reading = readingsData.readLine()) != null) {
-				System.out.println("sending data to the server");
+				System.out.println(reading);
 				outputStreamWriter.println(reading);
 				String response = inputStreamBuffer.readLine();
 				if (response.equalsIgnoreCase("error")) {
@@ -56,8 +56,7 @@ public class Pressure {
 				}
 				Thread.sleep(100);
 			} else {
-				System.out
-						.println("All data has been transmited - closing connection");
+				System.out.println("All data has been transmited - closing connection");
 				break;
 			}
 

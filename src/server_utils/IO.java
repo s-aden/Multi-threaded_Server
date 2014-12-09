@@ -19,7 +19,7 @@ public class IO {
 		BufferedReader buffer = new BufferedReader(new FileReader(filePath));
 		StringBuilder data = new StringBuilder();
 		String reading;
-		
+
 		while ((reading = buffer.readLine()) != null) {
 			data.append(reading);
 			data.append("|");

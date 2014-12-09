@@ -7,12 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class SharedActionState {
+public class ResourceManager {
 
 	private boolean accessing = false;
 	private String filePath;
 
-	public SharedActionState(String filePath) {
+	public ResourceManager(String filePath) {
 		this.filePath = filePath;
 	}
 
@@ -41,24 +41,24 @@ public class SharedActionState {
 	// Handle request
 	public synchronized String processInputData(String clientName, String data) throws IOException, ParseException {
 		// All sensors essentially do the same thing So, combine them into on condition
+		System.out.println("Proccessing input for " + clientName + " client");
 		if (clientName.equals("Temperature") || clientName.equals("Rainfall") || clientName.equals("Pressure")) {
+			System.out.println("Writing data to file " + clientName + " client");
 			return IO.writeToFile(filePath, data) ? "error" : "done";
 		} else if (clientName.equals("User")) {
 			// Client is User/Browser
+			System.out.println("Processing request for " + clientName + " client");
 			return processUserRequest(data);
 		}
-		
 		return "error";
 	}
 
 	private synchronized String processUserRequest(String request) throws IOException, ParseException {
 		// Trim white spaces
 		request = request.trim();
-		
+		System.out.println("Raw request: " + request);
 		String byNamePattern = "(Get\\s)(all\\s)(from\\s)(Temperature|Rainfall|Pressure)";
-		String rangePattern = "(Range\\s)(\\d{1,2}/\\d{1,2}/\\d{2,4}@\\d"
-				+ "{1,2}:\\d{1,2}:\\d{1,2}\\s)"
-				+ "(\\d{1,2}/\\d{1,2}/\\d{2,4}@\\d{1,2}:\\d{1,2}:\\d{1,2})";
+		String rangePattern = "(Range\\s)(\\d{1,2}/\\d{1,2}/\\d{2,4}@\\d{1,2}:\\d{1,2}:\\d{1,2}\\s)(\\d{1,2}/\\d{1,2}/\\d{2,4}@\\d{1,2}:\\d{1,2}:\\d{1,2})";
 		
 		if (request.equalsIgnoreCase("Get all")) {
 			return IO.readFile(filePath);
@@ -78,20 +78,21 @@ public class SharedActionState {
 			String req[] = request.split(" ");
 			Date start = IO.stringToDate(req[1].replace("@", " ")); // given the specified pattern start date
 			Date end = IO.stringToDate(req[2].replace("@", " "));// given the specified pattern end date
-			
+			System.out.println("Processed query: Range " + start + " " + end);
 			// Collect items within the given range
 			// Parse all back to to string format for transmission
 			DateFormat formatDate = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 			String collector="";
+			int counter =0;
 			for(Data d : data){
 				Date date = d.getDate();
 				if(!(date.before(start) || date.after(end))){
 					String dt = formatDate.format(d.getDate());
 					collector += d.getSensorType()+","+dt+","+d.getReading()+"|";
-					
+					counter++;
 				}
 			}
-
+			System.out.println("search finished found " + counter+ " matches");
 			return collector;
 					
 		} else {

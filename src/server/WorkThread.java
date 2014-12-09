@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.text.ParseException;
 
-import server_utils.SharedActionState;
+import server_utils.ResourceManager;
 
 public class WorkThread extends Thread {
 	
@@ -16,15 +16,15 @@ public class WorkThread extends Thread {
 	private Socket serverSocket;
 	private PrintWriter outputStreamWriter;
 	private BufferedReader inputReader;
-	private SharedActionState sharedActionState;
+	private ResourceManager resourceManager;
 	private String clientName;
 	
 	
-	public WorkThread(Socket serverSocket,SharedActionState sharedActionState) {
+	public WorkThread(Socket serverSocket,ResourceManager resourceManager) {
 		//super("WorkThread");
 		
 		this.serverSocket = serverSocket;
-		this.sharedActionState = sharedActionState;
+		this.resourceManager = resourceManager;
 	}
 
 	@Override
@@ -43,14 +43,14 @@ public class WorkThread extends Thread {
 			if(clientName!=null){
 				String line;
 				while((line = inputReader.readLine())!=null){
-					sharedActionState.acquireLock();
-					Long start = System.currentTimeMillis();
+					resourceManager.acquireLock();
 					// Process data and return result back the the requesting client
-					String result = sharedActionState.processInputData(clientName, line);
+					String result = resourceManager.processInputData(clientName, line);
+					System.out.println("Sending result to: " + clientName);
 					outputStreamWriter.println(result);
+					System.out.println("Result sent to: " + clientName);
 					// Release lock for other uses
-					sharedActionState.releaseLock();
-					System.out.println("Time taken: " + (System.currentTimeMillis() - start));
+					resourceManager.releaseLock();
 				}
 			}else {
 				System.out.println("No data recieved");
@@ -70,7 +70,7 @@ public class WorkThread extends Thread {
 				"Temperature|Rainfall|Pressure",
 				"\\w{7,12},\\d{2}/\\d{2}/\\d{4}\\s\\d{2}:\\d{2}:\\d{2},\\d{1,5}\\s\\w{2,7}"};
 			result = client.split(",");
-			if((result[0].matches(patterns[0])) && client.matches(patterns[1])){
+			if((result[0].matches(patterns[0]))){
 				clientName = result[0];
 			} else{
 				// Assume the client is User

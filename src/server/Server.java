@@ -3,7 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import server_utils.SharedActionState;
+import server_utils.ResourceManager;
 
 public class Server {
 	
@@ -13,7 +13,7 @@ public class Server {
 	private final static int PORT_NUMBER = 4444;
 	private final static String FILE_PATH= "server_data.txt";
 	private static ServerSocket serverSocket;
-	private static SharedActionState sharedActionState;
+	private static ResourceManager resourceManager;
 	
 	
 	public static void main(String[] args){
@@ -22,7 +22,7 @@ public class Server {
 	    System.out.println ("-----------------------------------------------------------------------------------------------------------");
 		
 		
-		sharedActionState = new SharedActionState(FILE_PATH);
+		resourceManager = new ResourceManager(FILE_PATH);
 		
 		try {
 			// Bind socket to a specified port, in this case whatever PORT_NUMBER has
@@ -39,7 +39,7 @@ public class Server {
 			try {
 				// Accept a connection and continue, otherwise wait for a connection to be made (block!)
 				// Fork a new thread for the connection
-				new WorkThread(serverSocket.accept(), sharedActionState).start();
+				new WorkThread(serverSocket.accept(), resourceManager).start();
 			} catch (IOException e) {
 				System.err.println("Couldn't make a connection, server killed");
 				System.exit(1);
